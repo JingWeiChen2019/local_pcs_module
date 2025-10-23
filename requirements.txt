@@ -1,0 +1,19 @@
+# requirements.txt
+
+# 應用程式框架 (UI) [cite: 17541, 17556]
+PyQt6
+
+# 核心數據處理 [cite: 17543, 17557]
+pandas
+
+# pandas 的 XLSX 依賴 [cite: 17544, 17558]
+openpyxl
+
+# Module-B PDF 提取 [cite: 17545, 17559]
+PyMuPDF
+
+# TSDD 測試框架 [cite: 17547, 17560]
+pytest
+
+# TSDD UI 測試 [cite: 17548, 17561]
+pytest-qt

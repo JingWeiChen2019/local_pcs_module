@@ -1,0 +1,19 @@
+# .gitignore
+
+# Python Virtual Environment
+# 絕對禁止提交 venv
+venv/
+/venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# TSDD (Pytest)
+.pytest_cache/
+
+# IDE/Editor specific
+.idea/
+.vscode/
