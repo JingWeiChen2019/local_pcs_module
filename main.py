@@ -1,51 +1,50 @@
-import sys
-from pathlib import Path
-from PyQt6.QtWidgets import QApplication, QMainWindow
+# main.py
+# [BUG-M1-002] (Green Light)
+# 修正組合根 (Composition Root)
 
-# 依賴注入 (Dependency Injection) - 實例化 Adapters
+import sys
+from PyQt6.QtWidgets import QApplication
+
+# 1. Import Adapters
 from src.lpis_module_a.adapters.pandas_csv_reader import PandasCsvReader
 from src.lpis_module_a.adapters.json_profile_repo import JsonProfileRepository
 from src.lpis_module_a.adapters.sqlite_order_repo import SqliteOrderRepository
-from src.lpis_module_a.use_cases.csv_mapping_service import CsvMappingService
-from src.lpis_module_a.ui.mapper_widget import PyQtMapperView
 
-# 確保 'data' 目錄存在 (用於 SQLite 和 Profiles)
-Path("data/profiles").mkdir(parents=True, exist_ok=True)
+# 2. Import Use Case
+from src.lpis_module_a.use_cases.csv_mapping_service import CsvMappingService
+
+# 3. Import UI
+# [BUG-M1-002] (Fix)
+# 導入 MainWindow (AC-1.1)，而非 PyQtMapperView
+from src.lpis_module_a.ui.main_window import MainWindow 
 
 def main():
     """
-    應用程式主入口點 (Application Entry Point)
-    滿足 BASELINE_RUN_COMMAND  啟動視窗的需求 [cite: 71]
+    (AC-1.1) 啟動 PyQt 主視窗
     """
-    
-    # 1. 設置 Adapters (具體實現)
-    db_path = "data/lpis_main.db"
-    profiles_dir = Path("data/profiles")
-    
+    app = QApplication(sys.argv)
+
+    # --- (Spec) Composition Root ---
+    # 1. Init Adapters (Ports)
     csv_reader = PandasCsvReader()
-    profile_repo = JsonProfileRepository(storage_path=profiles_dir)
-    order_repo = SqliteOrderRepository(db_path=db_path)
-    
-    # 2. 設置 Use Case (核心服務)
+    profile_repo = JsonProfileRepository(storage_path="data/profiles") # (Spec 5.2)
+    order_repo = SqliteOrderRepository(db_path="data/lpis_main.db") # (Spec 5.3)
+
+    # 2. Init Use Case (injecting Adapters)
     mapping_service = CsvMappingService(
         csv_reader=csv_reader,
         profile_repo=profile_repo,
         order_repo=order_repo
     )
     
-    # 3. 設置 UI (PyQt) [cite: 59]
-    app = QApplication(sys.argv)
+    # 3. Init UI (injecting Use Case)
+    # [BUG-M1-002] (Fix)
+    # 啟動 MainWindow (AC-1.1)，並傳入 DI
+    window = MainWindow(mapping_service=mapping_service)
     
-    main_window = QMainWindow()
-    main_window.setWindowTitle("LPIS - Module A (CSV Mapper)")
-    main_window.setGeometry(100, 100, 800, 600)
-    
-    # 將 [SPEC] 5.4 中定義的 UI 控件作為中央控件
-    mapper_view_widget = PyQtMapperView(mapping_service=mapping_service)
-    main_window.setCentralWidget(mapper_view_widget)
-    
-    main_window.show()
+    window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     main()
